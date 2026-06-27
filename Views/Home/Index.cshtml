@@ -1,0 +1,562 @@
+﻿@model TechStore.Models.indexProducts
+@{
+    ViewBag.Title = "TechStoreVN – Công nghệ đỉnh cao";
+    ViewBag.FullWidth = true;
+}
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+.ts-page { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; color: #1d1d1f; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); width: 100%; overflow-x: hidden; }
+
+.ts-hero, .ts-promo-strip, .ts-catbar { width: 100%; }
+
+/* ── HERO 3D ── */
+.ts-hero {
+    min-height: 70vh; max-height: 700px;
+    display: flex; align-items: center;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    overflow: hidden;
+    padding: 100px 0 60px;
+    position: relative;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+}
+.ts-hero-scene {
+    position: absolute; inset: 0;
+    perspective: 1000px;
+    pointer-events: none;
+    overflow: hidden;
+}
+.ts-hero-orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; }
+.ts-hero-orb-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(102,126,234,.7) 0%, transparent 70%); top: -200px; left: -150px; animation: orbFloat1 20s ease-in-out infinite alternate; }
+.ts-hero-orb-2 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(0,212,255,.6) 0%, transparent 70%); bottom: -150px; right: 5%; animation: orbFloat2 25s ease-in-out infinite alternate; }
+.ts-hero-orb-3 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(236,72,153,.5) 0%, transparent 70%); top: 30%; right: 5%; animation: orbFloat3 18s ease-in-out infinite alternate; }
+@@keyframes orbFloat1 { from { transform: translate(0,0) scale(1); } to { transform: translate(80px,100px) scale(1.15); } }
+@@keyframes orbFloat2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-100px,-80px) scale(1.2); } }
+@@keyframes orbFloat3 { from { transform: translate(0,0) scale(1); } to { transform: translate(-60px,80px) scale(.9); } }
+
+/* 3D floating shapes */
+.ts-hero-shape {
+    position: absolute;
+    transform-style: preserve-3d;
+    pointer-events: none;
+}
+.ts-hero-cube {
+    width: 90px; height: 90px;
+    border: 2px solid rgba(102,126,234,.4);
+    background: rgba(102,126,234,.1);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    animation: cubeFloat 15s ease-in-out infinite;
+}
+.ts-hero-cube-1 { top: 15%; right: 10%; animation-delay: 0s; transform: rotateX(25deg) rotateY(-30deg); }
+.ts-hero-cube-2 { top: 50%; right: 20%; width: 65px; height: 65px; animation-delay: -4s; transform: rotateX(-15deg) rotateY(45deg); border-color: rgba(0,212,255,.5); background: rgba(0,212,255,.08); }
+.ts-hero-cube-3 { top: 25%; right: 3%; width: 50px; height: 50px; animation-delay: -8s; border-radius: 50%; border-color: rgba(236,72,153,.6); }
+@@keyframes cubeFloat {
+    0%,100% { transform: rotateX(25deg) rotateY(-30deg) translateY(0) translateZ(0); }
+    33% { transform: rotateX(35deg) rotateY(-10deg) translateY(-25px) translateZ(40px); }
+    66% { transform: rotateX(10deg) rotateY(-50deg) translateY(15px) translateZ(-30px); }
+}
+.ts-hero-ring {
+    width: 250px; height: 250px;
+    border: 3px solid rgba(102,126,234,.3);
+    border-radius: 50%;
+    top: 15%; right: 15%;
+    animation: ringSpin 25s linear infinite;
+    box-shadow: 0 0 50px rgba(102,126,234,.2), inset 0 0 50px rgba(102,126,234,.1);
+}
+.ts-hero-ring::before {
+    content: '';
+    position: absolute; inset: 25px;
+    border: 2px dashed rgba(0,212,255,.4);
+    border-radius: 50%;
+}
+@@keyframes ringSpin { from { transform: rotateX(60deg) rotateZ(0deg); } to { transform: rotateX(60deg) rotateZ(360deg); } }
+
+.ts-hero-grid-3d {
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(102,126,234,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102,126,234,.08) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: perspective(700px) rotateX(60deg) scale(2.5);
+    transform-origin: center 80%;
+    animation: gridDrift 25s linear infinite;
+    opacity: .6;
+}
+@@keyframes gridDrift { from { background-position: 0 0; } to { background-position: 0 60px; } }
+
+.ts-hero-dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
+.ts-hero-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 80px;
+    display: flex; flex-direction: column; align-items: flex-start;
+    position: relative; z-index: 2; width: 100%;
+    transform-style: preserve-3d;
+    transition: transform .15s ease-out;
+}
+.ts-hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: #00d4ff; background: rgba(0,212,255,.15); border: 2px solid rgba(0,212,255,.3); padding: 8px 18px; border-radius: 50px; margin-bottom: 32px; backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,212,255,.2); }
+.ts-hero-eyebrow::before { content: ''; width: 8px; height: 8px; background: #00d4ff; border-radius: 50%; animation: blink 2s ease-in-out infinite; box-shadow: 0 0 12px #00d4ff; }
+@@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+.ts-hero-title { font-size: clamp(2.5rem, 4vw, 4rem); font-weight: 900; line-height: 1.05; letter-spacing: -.05em; color: #fff; margin-bottom: 24px; text-shadow: 0 8px 40px rgba(0,0,0,.4); }
+.ts-hero-title .line-muted { color: rgba(255,255,255,.5); font-weight: 800; }
+.ts-hero-title .line-gradient { background: linear-gradient(90deg, #00d4ff 0%, #667eea 50%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-size: 200% auto; animation: gradShift 5s linear infinite; filter: drop-shadow(0 0 30px rgba(0,212,255,.5)); }
+@@keyframes gradShift { from { background-position: 0% center; } to { background-position: 200% center; } }
+.ts-hero-sub { font-size: 18px; color: rgba(255,255,255,.7); max-width: 520px; line-height: 1.8; margin-bottom: 40px; text-shadow: 0 2px 10px rgba(0,0,0,.3); }
+.ts-hero-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 40px; }
+.ts-hero-cta { display: inline-flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 16px; font-weight: 700; padding: 18px 36px; border-radius: 50px; text-decoration: none; transition: all .3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 10px 40px rgba(102,126,234,.5); position: relative; overflow: hidden; }
+.ts-hero-cta::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent); transform: translateX(-100%); transition: transform .6s; }
+.ts-hero-cta:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 20px 60px rgba(102,126,234,.7); color: #fff; }
+.ts-hero-cta:hover::after { transform: translateX(100%); }
+.ts-hero-cta-ghost { display: inline-flex; align-items: center; gap: 10px; color: rgba(255,255,255,.9); font-size: 16px; font-weight: 600; text-decoration: none; border: 2px solid rgba(255,255,255,.3); padding: 18px 32px; border-radius: 50px; transition: all .3s; backdrop-filter: blur(12px); background: rgba(255,255,255,.1); }
+.ts-hero-cta-ghost:hover { border-color: rgba(255,255,255,.6); color: #fff; background: rgba(255,255,255,.2); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255,255,255,.2); }
+.ts-hero-stats { display: flex; gap: 40px; flex-wrap: wrap; }
+.ts-hero-stat-val { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -.03em; line-height: 1; margin-bottom: 6px; text-shadow: 0 2px 10px rgba(0,0,0,.3); }
+.ts-hero-stat-lbl { font-size: 13px; color: rgba(255,255,255,.6); font-weight: 500; }
+</style>
+<style>
+/* ── Category bar ── */
+.ts-catbar { 
+    display: flex; align-items: center; justify-content: center; gap: 12px; 
+    padding: 24px 32px; background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%); 
+    border-bottom: 2px solid rgba(0,0,0,.06); flex-wrap: wrap; z-index: 40; width: 100%; 
+    box-shadow: 0 4px 20px rgba(0,0,0,.04);
+}
+.ts-cat-pill { 
+    display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; 
+    border-radius: 50px; border: 2px solid #e9ecef; background: #fff; 
+    font-size: 14px; font-weight: 600; color: #333; text-decoration: none; 
+    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    position: relative; overflow: hidden;
+}
+.ts-cat-pill::before {
+    content: '';
+    position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102,126,234,.1), transparent);
+    transition: left .5s;
+}
+.ts-cat-pill:hover { 
+    border-color: #667eea; color: #667eea; background: linear-gradient(135deg, rgba(102,126,234,.05) 0%, rgba(118,75,162,.05) 100%); 
+    transform: translateY(-3px); box-shadow: 0 8px 25px rgba(102,126,234,.2);
+}
+.ts-cat-pill:hover::before { left: 100%; }
+.ts-cat-pill i { transition: transform .3s; }
+.ts-cat-pill:hover i { transform: scale(1.2) rotate(5deg); }
+
+/* ── Sections ── */
+.ts-section { padding: 100px 32px; max-width: 1280px; margin: 0 auto; }
+.ts-section-label { 
+    display: block; font-size: 13px; font-weight: 700; letter-spacing: .15em; 
+    text-transform: uppercase; color: #667eea; margin-bottom: 16px; 
+    background: linear-gradient(135deg, rgba(102,126,234,.1) 0%, rgba(118,75,162,.1) 100%);
+    padding: 8px 16px; border-radius: 50px; display: inline-block;
+}
+.ts-section-title { 
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; letter-spacing: -.03em; 
+    color: #1d1d1f; margin-bottom: 12px; background: linear-gradient(135deg, #1d1d1f 0%, #333 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.ts-section-sub { font-size: 16px; color: #6e6e73; margin-bottom: 56px; max-width: 520px; line-height: 1.7; }
+.ts-section-header-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 48px; gap: 20px; flex-wrap: wrap; }
+.ts-link-more { 
+    font-size: 15px; font-weight: 700; color: #667eea; text-decoration: none; 
+    white-space: nowrap; display: flex; align-items: center; gap: 8px; 
+    padding: 10px 20px; border-radius: 50px; border: 2px solid #667eea;
+    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ts-link-more:hover { 
+    background: #667eea; color: #fff; transform: translateY(-2px); 
+    box-shadow: 0 8px 25px rgba(102,126,234,.3);
+}
+
+/* ── Best seller ── */
+.ts-bestseller-track { 
+    display: flex; gap: 24px; overflow-x: auto; padding-bottom: 20px; 
+    scroll-snap-type: x mandatory; scrollbar-width: none; 
+}
+.ts-bestseller-track::-webkit-scrollbar { display: none; }
+.ts-bs-card { 
+    flex: 0 0 320px; scroll-snap-align: start; background: #fff; 
+    border-radius: 24px; overflow: hidden; cursor: pointer; 
+    transition: all .4s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+    border: 2px solid rgba(0,0,0,.06); box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+.ts-bs-card:hover { 
+    transform: translateY(-8px) scale(1.02); 
+    box-shadow: 0 20px 60px rgba(102,126,234,.15); 
+    border-color: rgba(102,126,234,.3);
+}
+.ts-bs-rank { 
+    position: absolute; top: 16px; left: 16px; width: 40px; height: 40px; 
+    border-radius: 50%; background: #1d1d1f; color: #fff; font-size: 14px; 
+    font-weight: 800; display: flex; align-items: center; justify-content: center; 
+    z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+.ts-bs-rank.gold   { background: linear-gradient(135deg, #f7c948, #e8a900); }
+.ts-bs-rank.silver { background: linear-gradient(135deg, #c0c0c0, #9a9a9a); }
+.ts-bs-rank.bronze { background: linear-gradient(135deg, #cd7f32, #a0522d); }
+.ts-bs-img { 
+    width: 100%; height: 240px; object-fit: cover; display: block; 
+    transition: transform .6s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+.ts-bs-card:hover .ts-bs-img { transform: scale(1.08); }
+.ts-bs-body { padding: 24px; }
+.ts-bs-name { 
+    font-size: 16px; font-weight: 700; color: #1d1d1f; margin-bottom: 8px; 
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; 
+    overflow: hidden; line-height: 1.5; 
+}
+.ts-bs-price { font-size: 18px; font-weight: 800; color: #dc2626; }
+.ts-bs-price-old { font-size: 14px; color: #9d9d9f; text-decoration: line-through; margin-right: 8px; }
+.ts-bs-sold { font-size: 13px; color: #6e6e73; margin-top: 6px; font-weight: 500; }
+.ts-bs-discount { 
+    display: inline-block; background: linear-gradient(135deg, #ff3b30, #dc2626); 
+    color: #fff; font-size: 12px; font-weight: 800; padding: 4px 10px; 
+    border-radius: 50px; margin-left: 8px; vertical-align: middle; 
+    box-shadow: 0 4px 12px rgba(255,59,48,.3);
+}
+
+/* ── Product grid ── */
+.ts-grid { 
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+    gap: 24px; 
+}
+.ts-card { 
+    background: #fff; border: 2px solid rgba(0,0,0,.06); border-radius: 24px; 
+    overflow: hidden; cursor: pointer; transition: all .4s cubic-bezier(0.4, 0, 0.2, 1); 
+    position: relative; box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+.ts-card:hover { 
+    transform: translateY(-8px); box-shadow: 0 20px 60px rgba(102,126,234,.15); 
+    border-color: rgba(102,126,234,.3);
+}
+.ts-card-img-wrap { 
+    position: relative; height: 220px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+    overflow: hidden; 
+}
+.ts-card-img { 
+    width: 100%; height: 100%; object-fit: cover; display: block; 
+    transition: transform .6s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+.ts-card:hover .ts-card-img { transform: scale(1.08); }
+.ts-card-discount { 
+    position: absolute; top: 16px; left: 16px; 
+    background: linear-gradient(135deg, #ff3b30, #dc2626); color: #fff; 
+    font-size: 12px; font-weight: 800; padding: 6px 12px; 
+    border-radius: 50px; z-index: 2; box-shadow: 0 4px 12px rgba(255,59,48,.3);
+}
+.ts-card-wish { 
+    position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; 
+    border-radius: 50%; background: rgba(255,255,255,.95); border: 2px solid rgba(0,0,0,.08); 
+    cursor: pointer; display: flex; align-items: center; justify-content: center; 
+    z-index: 3; transition: all .3s cubic-bezier(0.4, 0, 0.2, 1); 
+    color: #9d9d9f; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+.ts-card-wish:hover { 
+    transform: scale(1.15) rotate(10deg); color: #ff3b30; 
+    border-color: #ff3b30; box-shadow: 0 6px 20px rgba(255,59,48,.3);
+}
+.ts-card-wish.active { color: #ff3b30; border-color: #ff3b30; }
+.ts-card-body { padding: 20px; }
+.ts-card-name { 
+    font-size: 15px; font-weight: 700; color: #1d1d1f; margin-bottom: 8px; 
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; 
+    overflow: hidden; line-height: 1.5; 
+}
+.ts-card-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.ts-stars { display: flex; gap: 3px; }
+.ts-star { font-size: 12px; color: #d1d1d6; }
+.ts-star.on { color: #ff9f0a; }
+.ts-card-rating-txt { font-size: 13px; color: #6e6e73; font-weight: 500; }
+.ts-card-price { font-size: 18px; font-weight: 800; color: #dc2626; }
+.ts-card-price-old { font-size: 14px; color: #9d9d9f; text-decoration: line-through; margin-right: 8px; }
+.ts-card-sold { font-size: 13px; color: #6e6e73; margin-top: 6px; font-weight: 500; }
+.ts-empty { 
+    text-align: center; padding: 100px 32px; color: #6e6e73; 
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 24px; border: 2px dashed rgba(0,0,0,.1);
+}
+.ts-empty i { font-size: 56px; margin-bottom: 24px; display: block; color: #d1d1d6; }
+.ts-empty h3 { font-size: 22px; font-weight: 700; color: #1d1d1f; margin-bottom: 12px; }
+.ts-divider { height: 2px; background: linear-gradient(90deg, transparent, rgba(0,0,0,.1), transparent); max-width: 1280px; margin: 0 auto; }
+
+/* ── Promo strip ── */
+.ts-promo-strip { 
+    background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2d 100%); color: #fff; 
+    padding: 32px 32px; width: 100vw; margin-left: calc(50% - 50vw);
+    position: relative; overflow: hidden;
+}
+.ts-promo-strip::before {
+    content: '';
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 20% 50%, rgba(102,126,234,.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(0,212,255,.15) 0%, transparent 50%);
+    pointer-events: none;
+}
+.ts-promo-inner { 
+    max-width: 1280px; margin: 0 auto; display: flex; 
+    align-items: center; justify-content: space-between; gap: 24px; 
+    flex-wrap: wrap; position: relative; z-index: 1;
+}
+.ts-promo-text { text-align: left; flex: 1; min-width: 280px; }
+.ts-promo-strip h2 { 
+    font-size: clamp(1.2rem, 2.5vw, 1.5rem); font-weight: 800; 
+    letter-spacing: -.02em; margin-bottom: 8px; background: linear-gradient(90deg, #fff, #e0e0e0);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.ts-promo-strip p { font-size: 15px; color: #a1a1a6; margin-bottom: 0; line-height: 1.6; }
+.ts-promo-btn { 
+    display: inline-flex; align-items: center; gap: 10px; 
+    border: 2px solid rgba(255,255,255,.5); color: #fff; font-size: 14px; 
+    font-weight: 700; padding: 14px 28px; border-radius: 50px; 
+    text-decoration: none; transition: all .3s cubic-bezier(0.4, 0, 0.2, 1); 
+    white-space: nowrap; flex-shrink: 0; background: rgba(255,255,255,.1);
+    backdrop-filter: blur(10px);
+}
+.ts-promo-btn:hover { 
+    background: #fff; color: #1d1d1f; transform: translateY(-3px); 
+    box-shadow: 0 10px 30px rgba(255,255,255,.2);
+}
+
+@@media(max-width:640px) {
+    .ts-promo-inner { flex-direction: column; align-items: center; text-align: center; gap: 20px; }
+    .ts-promo-text { text-align: center; }
+    .ts-catbar { padding: 20px 16px; gap: 8px; }
+    .ts-cat-pill { padding: 10px 16px; font-size: 13px; }
+}
+@@media(max-width:768px) {
+    .ts-section { padding: 64px 20px; } .ts-hero-inner { padding: 0 32px; }
+    .ts-grid { grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 16px; }
+    .ts-card-img-wrap { height: 180px; } .ts-bs-card { flex: 0 0 260px; } .ts-bs-img { height: 200px; }
+    .ts-catbar { flex-direction: row; }
+}
+@@media(max-width:480px) {
+    .ts-grid { grid-template-columns: repeat(2,1fr); gap: 12px; }
+    .ts-hero { padding: 80px 0 48px; min-height: 60vh; max-height: none; } .ts-hero-title { font-size: 2.2rem; }
+    .ts-hero-actions { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .ts-hero-cta, .ts-hero-cta-ghost { width: 100%; justify-content: center; }
+    .ts-section { padding: 48px 16px; }
+}
+</style>
+
+<div class="ts-page">
+
+<!-- HERO -->
+<section class="ts-hero" id="tsHero">
+    <div class="ts-hero-scene" id="heroScene">
+        <div class="ts-hero-grid-3d"></div>
+        <div class="ts-hero-orb ts-hero-orb-1"></div>
+        <div class="ts-hero-orb ts-hero-orb-2"></div>
+        <div class="ts-hero-orb ts-hero-orb-3"></div>
+        <div class="ts-hero-shape ts-hero-ring"></div>
+        <div class="ts-hero-shape ts-hero-cube ts-hero-cube-1"></div>
+        <div class="ts-hero-shape ts-hero-cube ts-hero-cube-2"></div>
+        <div class="ts-hero-shape ts-hero-cube ts-hero-cube-3"></div>
+    </div>
+    <div class="ts-hero-dots"></div>
+    <div class="ts-hero-inner" id="heroInner">
+        <span class="ts-hero-eyebrow">TechStoreVN</span>
+        <h1 class="ts-hero-title">
+            <span class="line-muted">Công nghệ</span><br>
+            <span class="line-gradient">đỉnh cao.</span><br>
+            <span style="color:#fff;">Giá tốt nhất.</span>
+        </h1>
+        <p class="ts-hero-sub">Laptop, điện thoại, tai nghe và hơn thế nữa — được chọn lọc kỹ lưỡng, giao hàng nhanh toàn quốc.</p>
+        <div class="ts-hero-actions">
+            <a href="#ts-products" class="ts-hero-cta">Khám phá ngay <i class="fas fa-arrow-right" style="font-size:12px"></i></a>
+            <a href="@Url.Action("DangKy","User")" class="ts-hero-cta-ghost">Đăng ký miễn phí</a>
+        </div>
+        <div class="ts-hero-stats">
+            <div><div class="ts-hero-stat-val">10K+</div><div class="ts-hero-stat-lbl">Khách hàng</div></div>
+            <div style="width:1px;background:rgba(255,255,255,.1);"></div>
+            <div><div class="ts-hero-stat-val">500+</div><div class="ts-hero-stat-lbl">Sản phẩm</div></div>
+            <div style="width:1px;background:rgba(255,255,255,.1);"></div>
+            <div><div class="ts-hero-stat-val">4.9★</div><div class="ts-hero-stat-lbl">Đánh giá</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- CATEGORY BAR -->
+<nav class="ts-catbar" aria-label="Danh mục">
+    <a class="ts-cat-pill" href="@Url.Action("CatergoryPartial","Home",new{catergory="Laptop"})"><i class="fas fa-laptop"></i> Laptop</a>
+    <a class="ts-cat-pill" href="@Url.Action("CatergoryPartial","Home",new{catergory="Điện thoại"})"><i class="fas fa-mobile-alt"></i> Điện thoại</a>
+    <a class="ts-cat-pill" href="@Url.Action("CatergoryPartial","Home",new{catergory="Máy tính bảng"})"><i class="fas fa-tablet-alt"></i> Máy tính bảng</a>
+    <a class="ts-cat-pill" href="@Url.Action("CatergoryPartial","Home",new{catergory="PC"})"><i class="fas fa-desktop"></i> PC</a>
+    <a class="ts-cat-pill" href="@Url.Action("CatergoryPartial","Home",new{catergory="Tai nghe"})"><i class="fas fa-headphones"></i> Tai nghe</a>
+    <a class="ts-cat-pill" href="@Url.Action("CatergoryPartial","Home",new{catergory="Phụ kiện"})"><i class="fas fa-plug"></i> Phụ kiện</a>
+</nav>
+
+<!-- BEST SELLERS -->
+@if (Model != null && Model.bestSeller != null && Model.bestSeller.Any())
+{
+    <section class="ts-section">
+        <div class="ts-section-header-row">
+            <div>
+                <span class="ts-section-label">Bán chạy</span>
+                <h2 class="ts-section-title">Top sản phẩm</h2>
+                <p class="ts-section-sub">Được khách hàng tin chọn nhiều nhất</p>
+            </div>
+            <a href="#ts-products" class="ts-link-more">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="ts-bestseller-track">
+            @{ int bsRank = 0; }
+            @foreach (var item in Model.bestSeller)
+            {
+                bsRank++;
+                int? sold = (Model.soldQuantities != null && Model.soldQuantities.ContainsKey(item.ProductID)) ? Model.soldQuantities[item.ProductID] : 0;
+                string rankClass = bsRank == 1 ? "gold" : bsRank == 2 ? "silver" : "bronze";
+                string detailUrl = Url.Action("Details","CustomerPro", new { id = item.ProductID }) ?? "#";
+                <div class="ts-bs-card" onclick="location.href='@detailUrl'" role="button" tabindex="0">
+                    <span class="ts-bs-rank @rankClass">@bsRank</span>
+                    <img src="~/Images/@item.ImagePro" alt="@item.NamePro" class="ts-bs-img" loading="lazy" />
+                    <div class="ts-bs-body">
+                        <div class="ts-bs-name">@item.NamePro</div>
+                        <div style="margin-bottom:4px">
+                            @if (item.Discount > 0)
+                            {
+                                var orig = item.Price / (1 - (decimal)item.Discount / 100);
+                                <span class="ts-bs-price-old">@orig.ToString("N0") ₫</span>
+                            }
+                            <span class="ts-bs-price">@item.Price.ToString("N0") ₫</span>
+                            @if (item.Discount > 0) { <span class="ts-bs-discount">-@item.Discount%</span> }
+                        </div>
+                        <div class="ts-bs-sold">Đã bán: @sold</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+    <div class="ts-divider"></div>
+}
+
+<!-- PROMO STRIP -->
+<div class="ts-promo-strip">
+    <div class="ts-promo-inner">
+        <div class="ts-promo-text">
+            <h2>Ưu đãi dành riêng cho bạn</h2>
+            <p>Đăng ký tài khoản để nhận khuyến mãi độc quyền và thông báo sản phẩm mới</p>
+        </div>
+        <a href="@Url.Action("DangKy","User")" class="ts-promo-btn"><i class="fas fa-user-plus"></i> Tạo tài khoản miễn phí</a>
+    </div>
+</div>
+
+<!-- ALL PRODUCTS -->
+<section class="ts-section" id="ts-products">
+    <div class="ts-section-header-row">
+        <div>
+            <span class="ts-section-label">Sản phẩm</span>
+            <h2 class="ts-section-title">Tất cả sản phẩm</h2>
+            <p class="ts-section-sub">Công nghệ đa dạng, chất lượng được kiểm định</p>
+        </div>
+    </div>
+    @if (Model != null && Model.products != null && Model.products.Any())
+    {
+        <div class="ts-grid">
+            @foreach (var item in Model.products)
+            {
+                int? sold = (Model.soldQuantities != null && Model.soldQuantities.ContainsKey(item.ProductID)) ? Model.soldQuantities[item.ProductID] : 0;
+                decimal avgScore = 0; int totalRev = 0;
+                if (Model.scoreProducts != null && Model.scoreProducts.ContainsKey(item.ProductID))
+                { avgScore = Model.scoreProducts[item.ProductID].Item1; totalRev = Model.scoreProducts[item.ProductID].Item2; }
+                int starFull = (int)Math.Floor((double)avgScore);
+                bool starHalf = (avgScore - starFull) >= 0.5m;
+                string detailUrl = Url.Action("Details","CustomerPro", new { id = item.ProductID }) ?? "#";
+                <div class="ts-card" onclick="location.href='@detailUrl'" role="button" tabindex="0">
+                    <div class="ts-card-img-wrap">
+                        @if (item.Discount > 0) { <span class="ts-card-discount">-@item.Discount%</span> }
+                        <img src="~/Images/@item.ImagePro" alt="@item.NamePro" class="ts-card-img" loading="lazy" />
+                        <button class="ts-card-wish" id="wish-@item.ProductID"
+                                onclick="event.stopPropagation(); toggleWish(@item.ProductID, this)" aria-label="Yêu thích">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="ts-card-body">
+                        <div class="ts-card-name">@item.NamePro</div>
+                        @if (totalRev > 0)
+                        {
+                            <div class="ts-card-rating">
+                                <div class="ts-stars">
+                                    @for (int s = 1; s <= 5; s++)
+                                    {
+                                        bool filled = s <= starFull;
+                                        bool half = !filled && s == starFull + 1 && starHalf;
+                                        <i class="@(filled ? "fas fa-star ts-star on" : half ? "fas fa-star-half-alt ts-star on" : "far fa-star ts-star")"></i>
+                                    }
+                                </div>
+                                <span class="ts-card-rating-txt">@avgScore.ToString("0.0") (@totalRev)</span>
+                            </div>
+                        }
+                        <div>
+                            @if (item.Discount > 0) { var orig = item.Price / (1 - (decimal)item.Discount / 100); <span class="ts-card-price-old">@orig.ToString("N0") ₫</span> }
+                            <span class="ts-card-price">@item.Price.ToString("N0") ₫</span>
+                        </div>
+                        <div class="ts-card-sold">Đã bán: @sold</div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="ts-empty">
+            <i class="fas fa-box-open"></i>
+            <h3>Chưa có sản phẩm</h3>
+            <p>Chúng tôi đang cập nhật thêm sản phẩm. Quay lại sau nhé!</p>
+        </div>
+    }
+</section>
+
+</div>
+
+<script>
+const _wishedIds = new Set();
+async function loadWishlist() {
+    try {
+        const res = await fetch('@Url.Action("GetWishlist","Home")');
+        if (!res.ok) return;
+        const data = await res.json();
+        data.forEach(x => {
+            const id = x.productID ?? x.ProductID;
+            _wishedIds.add(id);
+            const btn = document.getElementById('wish-' + id);
+            if (btn) btn.classList.add('active');
+        });
+    } catch {}
+}
+async function toggleWish(id, btn) {
+    const isActive = _wishedIds.has(id);
+    const url = isActive ? '@Url.Action("RemoveFromWishlist","Home")' : '@Url.Action("AddToWishlist","Home")';
+    try {
+        const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(isActive ? {ProductID:id} : {ProductID:id,ProductsName:''}) });
+        const data = await res.json();
+        if (data.success !== false) {
+            if (isActive) { _wishedIds.delete(id); btn.classList.remove('active'); }
+            else { _wishedIds.add(id); btn.classList.add('active'); }
+        }
+    } catch {}
+}
+document.addEventListener('DOMContentLoaded', () => {
+    loadWishlist();
+    document.querySelector('.ts-hero-cta')?.addEventListener('click', e => {
+        const t = document.querySelector('#ts-products');
+        if (t) { e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+    });
+
+    // 3D parallax hero
+    const hero = document.getElementById('tsHero');
+    const heroInner = document.getElementById('heroInner');
+    const scene = document.getElementById('heroScene');
+    if (hero && heroInner) {
+        hero.addEventListener('mousemove', e => {
+            const rect = hero.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            heroInner.style.transform = `rotateY(${x * 6}deg) rotateX(${-y * 4}deg) translateZ(20px)`;
+            if (scene) scene.style.transform = `translate(${x * -20}px, ${y * -15}px)`;
+        });
+        hero.addEventListener('mouseleave', () => {
+            heroInner.style.transform = '';
+            if (scene) scene.style.transform = '';
+        });
+    }
+});
+</script>

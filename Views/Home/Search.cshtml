@@ -1,0 +1,509 @@
+﻿@model IEnumerable<TechStore.Models.Products>
+@{
+    ViewBag.Title = "Kết quả tìm kiếm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // Tạo danh sách nút phân loại chuẩn TGDĐ (Chữ + Số lượng)
+    var filterPills = new List<dynamic> {
+        new { Id = "all", Name = "Tất cả", Count = Model?.Count() ?? 0 },
+        new { Id = "dienthoai", Name = "Điện thoại", Count = 120 },
+        new { Id = "tainghe", Name = "Tai nghe", Count = 95 },
+        new { Id = "dongho", Name = "Đồng hồ thông minh", Count = 80 },
+        new { Id = "laptop", Name = "Laptop", Count = 64 },
+        new { Id = "phukien", Name = "Phụ kiện", Count = 52 }
+    };
+}
+
+<style>
+    :root {
+        /* BỘ MÀU CHỦ ĐẠO CỦA BẠN (GIỮ NGUYÊN) */
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --text-dark: #2d3748;
+        --text-muted: #718096;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --border-light: #e2e8f0;
+        --shadow-soft: 0 4px 15px rgba(0,0,0,0.03);
+        --shadow-hover: 0 15px 35px rgba(102, 126, 234, 0.15);
+        --border-radius: 16px;
+    }
+
+    body {
+        background: var(--bg-light); 
+    }
+
+    .search-page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    /* ===== KHUNG TÌM KIẾM CHUẨN TGDĐ ===== */
+    .tgdd-search-header {
+        background: var(--bg-white);
+        border-radius: var(--border-radius);
+        padding: 25px 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid var(--border-light);
+    }
+
+    .search-title-box {
+        margin-bottom: 20px;
+    }
+
+    .search-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0 0 5px 0;
+    }
+
+    .search-subtitle {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    /* Nút phân loại (Pills) */
+    .filter-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .filter-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        background: var(--bg-white);
+        color: var(--text-dark);
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .filter-pill:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .filter-pill.active {
+        background: var(--primary-gradient);
+        border-color: transparent;
+        color: white;
+    }
+
+    /* Hàng Checkbox & Sort */
+    .filter-bar-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .filter-checkboxes {
+        display: flex;
+        gap: 25px;
+        align-items: center;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: var(--text-dark);
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #667eea;
+        cursor: pointer;
+    }
+
+    .sort-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sort-box span {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .sort-box select {
+        padding: 8px 15px;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        color: var(--text-dark);
+        background: var(--bg-white);
+        cursor: pointer;
+        outline: none;
+        min-width: 150px;
+    }
+
+    .sort-box select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+
+    /* ===== Products GRID (ĐỒNG BỘ 100% VỚI CATEGORY) ===== */
+    .Products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 50px;
+    }
+
+    .Products-card {
+        background: var(--bg-white);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow-soft);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        border: 1px solid var(--border-light);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .Products-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-hover);
+        border-color: #667eea;
+    }
+
+    .Products-image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        background: var(--bg-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .Products-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .Products-card:hover .Products-image { transform: scale(1.08); }
+
+    .Products-overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(5px); z-index: 2;
+    }
+    .Products-card:hover .Products-overlay { opacity: 1; }
+    
+    .view-details {
+        color: white; font-weight: 700; font-size: 1rem;
+        text-transform: uppercase; letter-spacing: 1px;
+        display: flex; align-items: center; gap: 8px;
+        transform: translateY(20px); transition: transform 0.4s;
+    }
+    .Products-card:hover .view-details { transform: translateY(0); }
+
+    .discount-badge {
+        position: absolute; top: 12px; left: 12px;
+        background: var(--secondary-gradient); color: white;
+        padding: 4px 10px; border-radius: 8px;
+        font-size: 0.8rem; font-weight: 700; z-index: 5;
+        box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+    }
+
+    .wishlist-btn {
+        position: absolute; top: 12px; right: 12px;
+        background: rgba(255, 255, 255, 0.95); border: none;
+        width: 40px; height: 40px; border-radius: 50%;
+        cursor: pointer; z-index: 6; display: flex; align-items: center; justify-content: center;
+        transition: all 0.3s; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.8);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .wishlist-btn:hover { background: #fff; transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+    .wishlist-btn.active { background: var(--secondary-gradient); border-color: rgba(245, 87, 108, 0.5); transform: scale(1.1); }
+    .wishlist-icon { font-size: 18px; transition: all 0.3s ease; color: #ff6b9d; }
+    .wishlist-btn.active .wishlist-icon { color: white; animation: heartBeat 0.6s ease-in-out; }
+    
+    .wishlist-count {
+        position: absolute; top: -8px; right: -8px; background: var(--accent-gradient); color: white;
+        font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 12px;
+        min-width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+        border: 2px solid white;
+    }
+
+    .Products-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+    .Products-name {
+        font-size: 1.05rem; font-weight: 700; color: var(--text-dark);
+        margin-bottom: 10px; line-height: 1.4;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .meta-container { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .Products-rating { display: flex; align-items: center; gap: 4px; }
+    .star { font-size: 12px; color: #ddd; }
+    .star.filled { color: #ffd700; }
+    .rating-count { font-size: 0.75rem; color: var(--text-muted); }
+    
+    .Products-sold { font-size: 0.8rem; font-weight: 600; color: #4facfe; background: #e0f7fa; padding: 2px 8px; border-radius: 12px; }
+
+    .price-container { margin-top: auto; display: flex; flex-direction: column; gap: 2px; }
+    .price-current {
+        font-size: 1.25rem; font-weight: 800; background: var(--primary-gradient);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .price-original { font-size: 0.9rem; color: var(--text-muted); text-decoration: line-through; font-weight: 500; }
+
+    /* ===== ALERT / EMPTY STATE ===== */
+    .alert-enhanced {
+        background: #f8fafc; color: var(--text-dark); padding: 40px 20px; border-radius: var(--border-radius);
+        margin: 0 auto 30px; border: 1px solid var(--border-light); text-align: center; font-weight: 500;
+        box-shadow: var(--shadow-soft); display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    .alert-enhanced i { font-size: 3.5rem; margin-bottom: 10px; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .alert-enhanced p { font-size: 1.1rem; margin: 0; color: var(--text-muted); }
+
+    @@media (max-width: 768px) {
+        .Products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .Products-image-wrapper { height: 160px; }
+        .price-current { font-size: 1.1rem; }
+        .filter-bar-row { flex-direction: column; align-items: flex-start; }
+        .filter-checkboxes { flex-wrap: wrap; gap: 15px; }
+        .sort-box { width: 100%; justify-content: space-between; margin-top: 10px; }
+    }
+    
+    @@keyframes heartBeat { 0%, 100% { transform: scale(1); } 25% { transform: scale(1.2); } 50% { transform: scale(1.1); } 75% { transform: scale(1.15); } }
+    .wishlist-btn.pulse { animation: wishlistPulse 0.6s ease-in-out; }
+    @@keyframes wishlistPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+</style>
+
+<main class="search-page-container" style="padding-top: 10px;">
+    
+    <div class="tgdd-search-header">
+        
+        <div class="search-title-box">
+            <h1 class="search-title">Kết quả tìm kiếm cho "@ViewBag.Keyword"</h1>
+            <p class="search-subtitle">Tìm thấy <strong>@(Model?.Count() ?? 0)</strong> sản phẩm phù hợp</p>
+        </div>
+
+        <div class="filter-pills">
+            @foreach (var pill in filterPills)
+            {
+                <a href="#" class="filter-pill @(pill.Id == "all" ? "active" : "")">
+                    @pill.Name (@pill.Count)
+                </a>
+            }
+        </div>
+
+        <div class="filter-bar-row">
+            <div class="filter-checkboxes">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="filter-discount">
+                    <span>Giảm giá</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="filter-premium">
+                    <span>Hàng cao cấp</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="filter-installment">
+                    <span>Trả góp 0%</span>
+                </label>
+            </div>
+
+            <div class="sort-box">
+                <form method="get" action="@Url.Action("Search")" id="sortSearchForm">
+                    <input type="hidden" name="keyword" value="@ViewBag.Keyword" />
+                    <span>Xếp theo: </span>
+                    <select name="sortOrder" onchange="document.getElementById('sortSearchForm').submit()">
+                        <option value="">Nổi bật</option>
+                        <option value="price_asc" selected="@(ViewBag.CurrentSort == "price_asc" ? "selected" : null)">Giá thấp đến cao</option>
+                        <option value="price_desc" selected="@(ViewBag.CurrentSort == "price_desc" ? "selected" : null)">Giá cao xuống thấp</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    @if (ViewBag.Loi != null)
+    {
+        <div class="alert-enhanced">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>@ViewBag.Loi</p>
+        </div>
+    }
+    else if (Model != null && Model.Any())
+    {
+        <div class="Products-grid">
+            @foreach (var item in Model)
+            {
+                <article class="Products-card" onclick="window.location.href='@Url.Action("Details", "CustomerPro", new { id = item.ProductID })'">
+                    
+                    <div class="Products-image-wrapper">
+                        @if (item.Discount > 0)
+                        {
+                            <div class="discount-badge">-@item.Discount%</div>
+                        }
+
+                        <img src="~/Images/@item.ImagePro" alt="@item.NamePro" class="Products-image" loading="lazy" />
+                             
+                        <div class="Products-overlay">
+                            <span class="view-details"><i class="fas fa-eye"></i> Chi tiết</span>
+                        </div>
+
+                        <button class="wishlist-btn" onclick="event.stopPropagation(); wishlistController.toggleWishlist(@item.ProductID, this)" aria-label="Thả tim">
+                            <i class="wishlist-icon fas fa-heart"></i>
+                            <span class="wishlist-count" id="wishlist-count-@item.ProductID">0</span>
+                        </button>
+                    </div>
+
+                    <div class="Products-info">
+                        <h3 class="Products-name">@item.NamePro</h3>
+
+                        <div class="meta-container">
+                            <div class="Products-rating">
+                                <div class="rating-stars">
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                    <span class="star filled">★</span>
+                                </div>
+                                <span class="rating-count">(127)</span>
+                            </div>
+                        </div>
+
+                        <div class="price-container">
+                            @if (item.Discount > 0)
+                            {
+                                var originalPrice = item.Price / (1 - (decimal)item.Discount / 100);
+                                <span class="price-original">@((decimal)originalPrice).ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) ₫</span>
+                                <span class="price-current">@((decimal)item.Price).ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) ₫</span>
+                            }
+                            else
+                            {
+                                <span class="price-current">@(decimal.TryParse(item.Price.ToString(), out decimal price) ? price.ToString("N0") : item.Price) ₫</span>
+                            }
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert-enhanced">
+            <i class="fas fa-search-minus"></i>
+            <p>Rất tiếc, chúng tôi không tìm thấy sản phẩm nào phù hợp với từ khóa của bạn. Vui lòng thử lại với từ khóa khác!</p>
+        </div>
+    }
+</main>
+
+<script>
+    // XỬ LÝ GIAO DIỆN NÚT NHÃN HIỆU CODE CỨNG
+    document.addEventListener('DOMContentLoaded', () => {
+        const pills = document.querySelectorAll('.filter-pill');
+        pills.forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                pills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+            });
+        });
+    });
+
+    // WISHLIST CONTROLLER ĐỒNG BỘ 100% VỚI CATEGORY
+    const wishlistController = {
+        likeCounts: JSON.parse(localStorage.getItem('likeCounts') || '{}'),
+        likedProducts: JSON.parse(localStorage.getItem('likedProducts') || '{}'),
+
+        init() { this.updateAllWishlistUI(); },
+
+        toggleWishlist(ProductID, buttonElement) {
+            if (this.likedProducts[ProductID]) this.removeFromWishlist(ProductID, buttonElement);
+            else this.addToWishlist(ProductID, buttonElement);
+        },
+
+        addToWishlist(ProductID, buttonElement) {
+            this.likedProducts[ProductID] = true;
+            this.likeCounts[ProductID] = (this.likeCounts[ProductID] || 0) + 1;
+            this.triggerPulse(buttonElement);
+            this.updateWishlistUI(ProductID, buttonElement);
+            this.saveAndNotify(`Đã thả tim! ❤️`, 'success');
+        },
+
+        removeFromWishlist(ProductID, buttonElement) {
+            this.likedProducts[ProductID] = false;
+            if (this.likeCounts[ProductID] > 0) this.likeCounts[ProductID]--;
+            this.triggerPulse(buttonElement);
+            this.updateWishlistUI(ProductID, buttonElement);
+            this.saveAndNotify(`Đã bỏ tim! 💔`, 'error');
+        },
+
+        triggerPulse(buttonElement) {
+            buttonElement.classList.add('pulse');
+            setTimeout(() => buttonElement.classList.remove('pulse'), 600);
+        },
+
+        updateWishlistUI(ProductID, buttonElement) {
+            const countElement = buttonElement.querySelector('.wishlist-count');
+            const count = this.likeCounts[ProductID] || 0;
+            countElement.textContent = count;
+            
+            buttonElement.classList.toggle('active', this.likedProducts[ProductID]);
+            countElement.style.display = count > 0 ? 'flex' : 'none';
+        },
+
+        updateAllWishlistUI() {
+            document.querySelectorAll('[id^="wishlist-count-"]').forEach(countEl => {
+                const id = countEl.id.replace('wishlist-count-', '');
+                this.updateWishlistUI(id, countEl.closest('.wishlist-btn'));
+            });
+        },
+
+        saveAndNotify(message, type) {
+            localStorage.setItem('likeCounts', JSON.stringify(this.likeCounts));
+            localStorage.setItem('likedProducts', JSON.stringify(this.likedProducts));
+            this.showNotification(message, type);
+        },
+
+        showNotification(message, type) {
+            const notif = document.createElement('div');
+            notif.style.cssText = `position: fixed; top: 100px; right: 20px; background: ${type === 'success' ? 'var(--primary-gradient)' : 'var(--danger-gradient)'}; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 9999; font-weight: 600; transform: translateX(100%); transition: transform 0.3s;`;
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            requestAnimationFrame(() => notif.style.transform = 'translateX(0)');
+            setTimeout(() => {
+                notif.style.transform = 'translateX(100%)';
+                setTimeout(() => document.body.removeChild(notif), 300);
+            }, 3000);
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => wishlistController.init());
+</script>

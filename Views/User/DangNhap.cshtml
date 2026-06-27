@@ -1,0 +1,180 @@
+﻿@using System.Drawing
+@{
+    ViewBag.Title = "DangNhap";
+    Layout = "~/Views/Shared/_LogSignLayout.cshtml";
+}
+
+<div class="auth-page">
+    <aside class="auth-brand">
+        <div class="auth-orb auth-orb-1"></div>
+        <div class="auth-orb auth-orb-2"></div>
+        <div class="auth-orb auth-orb-3"></div>
+        <div class="auth-brand-inner">
+            <div class="auth-logo">
+                <div class="auth-logo-icon"><i class="fas fa-microchip"></i></div>
+                <div class="auth-logo-text">TechStore<span>VN</span></div>
+            </div>
+            <h2>Công nghệ <em>đỉnh cao</em>,<br>trải nghiệm tuyệt vời</h2>
+            <p>Đăng nhập để khám phá hàng ngàn sản phẩm công nghệ chính hãng với ưu đãi VIP độc quyền.</p>
+            <ul class="auth-features">
+                <li><i class="fas fa-shield-alt"></i> Bảo mật 2 lớp (2FA)</li>
+                <li><i class="fas fa-truck"></i> Giao hàng nhanh toàn quốc</li>
+                <li><i class="fas fa-crown"></i> Chương trình VIP 3 hạng</li>
+                <li><i class="fas fa-headset"></i> Hỗ trợ 24/7</li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="auth-form-panel">
+        <div class="auth-card">
+            <div class="header">
+                <h1>Đăng nhập tài khoản</h1>
+                <p>Chào mừng bạn quay trở lại 👋</p>
+            </div>
+
+            <div class="alert alert-danger" id="alertBox" style="display: none;" role="alert">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorMessage"></span>
+            </div>
+
+            <form id="logIn_form" class="auth-login-form">
+                <div class="form-group">
+                    <label for="nameCus">Tên đăng nhập</label>
+                    <div class="input-wrapper">
+                        <input type="text" class="form-control" id="nameCus" required placeholder="Nhập tên đăng nhập" />
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                    <div class="invalid-feedback">Vui lòng nhập tên đăng nhập.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="passCus">Mật khẩu</label>
+                    <div class="input-wrapper">
+                        <input type="password" class="form-control" id="passCus" required placeholder="Nhập mật khẩu" />
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
+                    <div class="invalid-feedback">Vui lòng nhập mật khẩu.</div>
+                </div>
+
+                <div class="g-recaptcha" data-sitekey="6LcWOR4tAAAAALNTeJa-dpcO2xt6AXG_9kpZeoBM"></div>
+
+                <div class="remember-row">
+                    <input type="checkbox" id="btnIsRemember" value="true" />
+                    <label for="btnIsRemember">Lưu phiên đăng nhập</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btnSubmitLogin">
+                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                </button>
+            </form>
+
+            <div id="2factorform" class="auth-otp-step" style="display:none;">
+                <div class="otp-card">
+                    <div class="otp-header">
+                        <i class="fas fa-shield-alt otp-icon"></i>
+                        <h3>Xác thực hai lớp (2FA)</h3>
+                        <p>Mở ứng dụng Authenticator để lấy mã 6 số</p>
+                    </div>
+                    <div class="otp-input-section">
+                        <div class="input-wrapper">
+                            <input type="text" maxlength="6" class="form-control otp-input" id="otpCode" placeholder="000000" />
+                            <i class="fas fa-key input-icon"></i>
+                        </div>
+                    </div>
+                    <div class="otp-actions">
+                        <button type="button" class="btn btn-primary" id="btnVerifyOTP">
+                            <i class="fas fa-check-circle"></i> Xác thực
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="window.location.reload()">
+                            Quay lại
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="login-link">
+                <p><a href="/User/ResetPassword">Quên mật khẩu?</a></p>
+                <p>Không có tài khoản? <a href="/User/DangKy">Đăng ký ngay</a></p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let tempUsername = "";
+    let tempIsRemember = false;
+
+    const logInForm = document.getElementById("logIn_form");
+    const factorForm = document.getElementById("2factorform");
+    const alertBox = document.getElementById("alertBox");
+    const errorMsg = document.getElementById("errorMessage");
+
+    function showAlert(message) {
+        errorMsg.textContent = message;
+        alertBox.style.display = "flex";
+    }
+
+    logInForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        tempUsername = document.getElementById("nameCus").value;
+        const pass = document.getElementById("passCus").value;
+        tempIsRemember = document.getElementById("btnIsRemember").checked;
+
+        const responseToken = grecaptcha.getResponse();
+        if (responseToken.length === 0) {
+            alert("Vui lòng tích vào ô 'Tôi không phải là người máy'!");
+            return;
+        }
+
+        try {
+            let response = await fetch('/User/DangNhapXThuc', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ NameCus: tempUsername, PassCus: pass, isRemember: tempIsRemember })
+            });
+            let data = await response.json();
+
+            if (!data.success) {
+                showAlert(data.message);
+            } else if (data.need2fa) {
+                alertBox.style.display = "none";
+                logInForm.style.display = "none";
+                factorForm.style.display = "block";
+                document.getElementById("otpCode").focus();
+            } else {
+                window.location.href = data.redirectUrl;
+            }
+        } catch (error) {
+            showAlert("Lỗi kết nối đến máy chủ!");
+        }
+    });
+
+    document.getElementById("btnVerifyOTP").addEventListener("click", async function() {
+        const otpInput = document.getElementById("otpCode").value;
+        if (otpInput.length !== 6) {
+            showAlert("Vui lòng nhập đủ 6 số!");
+            return;
+        }
+
+        try {
+            let response = await fetch('/User/VerifyLoginOTP', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ NameCus: tempUsername, OtpCode: otpInput, isRemember: tempIsRemember })
+            });
+            let data = await response.json();
+
+            if (data.success) {
+                window.location.href = data.redirectUrl;
+            } else {
+                showAlert(data.message);
+                document.getElementById("otpCode").value = "";
+            }
+        } catch (error) {
+            showAlert("Lỗi kết nối mạng!");
+        }
+    });
+});
+</script>
