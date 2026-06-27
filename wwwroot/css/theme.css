@@ -1,0 +1,16 @@
+/* theme.css - small overrides for prototype */
+:root{
+  --brand: #0ea5a4; /* teal */
+  --cta: #ff7a59; /* warm accent */
+}
+
+/* small global reset tweaks */
+img{display:block;max-width:100%;height:auto}
+
+/* utility tweaks */
+.btn-cta{background:var(--cta);color:#fff;padding:.5rem 1rem;border-radius:.5rem}
+
+/* ensure container spacing when Tailwind CDN isn't available */
+@media (max-width:640px){
+  .max-w-7xl{padding-left:1rem;padding-right:1rem}
+}
